@@ -1,7 +1,11 @@
 <template>
   <div class="box">
     <div class="columns">
-      <div class="column is-5" role="form" aria-label="Formulário para iniciar uma nova tarefa">
+      <div
+        class="column is-5"
+        role="form"
+        aria-label="Formulário para iniciar uma nova tarefa"
+      >
         <input
           class="input"
           type="text"
@@ -24,47 +28,49 @@
         </div>
       </div>
       <div class="column">
-        <Temporizador @aoFinalizarTarefa="salvarTarefa"/>
+        <Temporizador @aoFinalizarTarefa="salvarTarefa" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import Temporizador from "./Temporizador.vue";
-import { useStore } from 'vuex'
+import { useStore } from "vuex";
 
-import { key } from '@/store'
+import { key } from "@/store";
+import IProjeto from "@/interfaces/IProjeto";
 
 export default defineComponent({
   name: "Formulario",
-  emits: ['aoSalvarTarefa'],
+  emits: ["aoSalvarTarefa"],
   components: {
     Temporizador,
   },
-  data () { 
-    return {
-      descricao: '',
-      idProjeto: ''      
-    }
-  },
-  methods: {
-    salvarTarefa (tempoEmSegundos: number) : void {    
-      this.$emit('aoSalvarTarefa', {
+  setup(props, { emit }) {
+    const descricao = ref("");
+    const idProjeto = ref("");
+    const store = useStore(key);
+    const projetos = computed(() => store.state.projeto.projetos);
+
+    const salvarTarefa = (tempoEmSegundos: number): void => {
+      emit("aoSalvarTarefa", {
         duracaoEmSegundos: tempoEmSegundos,
-        descricao: this.descricao,
-        projeto: this.projetos.find(proj => proj.id == this.idProjeto)
-      })
-      this.descricao = ''
-    }
-  },
-  setup () {
-    const store = useStore(key)
+        descricao: descricao.value,
+        projeto: projetos.value.find(
+          (proj: IProjeto) => proj.id == idProjeto.value
+        ),
+      });
+      descricao.value = "";
+    };
     return {
-      projetos: computed(() => store.state.projetos)
-    }
-  }
+      projetos,
+      descricao,
+      idProjeto,
+      salvarTarefa,
+    };
+  },
 });
 </script>
 <style scoped>
